@@ -20,3 +20,6 @@ def mark_done(habit_name:str, data: Dict[str, Any]) -> None:
     if habit["last_done"] != today:
         habit["streak"] += 1
         habit["last_done"] = today
+
+def list_habits(data):
+    return list(data.keys())

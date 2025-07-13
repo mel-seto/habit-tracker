@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-import core
+from habit_tracker import core
 
 
 def test_add_habit_create_new_entry():
@@ -52,3 +52,19 @@ def test_mark_done_does_not_increase_streak_twice_in_a_day():
 
     assert data["run"]["streak"] == 5
     assert data["run"]["last_done"] == today
+
+
+def test_list_habits_returns_all_habit_names():
+    data = {
+        "read": {"streak": 3, "last_done": "2024-07-10"},
+        "run": {"streak": 2, "last_done": "2024-07-11"},
+    }
+
+    result = core.list_habits(data)
+    assert set(result) == {"read", "run"}
+
+def test_list_habits_empty_returns_empty_list():
+    data = {}
+    result = core.list_habits(data)
+    assert result == []
+

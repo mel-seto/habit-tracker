@@ -1,25 +1,24 @@
 from datetime import date
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 
-def add_habit(habit_name:str, data: Dict[str, Any]) -> None:
-    if habit_name in data:
-        raise ValueError(f"Habit '{habit_name}' already exists")
-    data[habit_name] = {
-        "streak": 0,
-        "last_done": None
-    }
+def add_habit(name: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    if name not in data:
+        data[name] = {"dates": []}
+    return data
 
-def mark_done(habit_name:str, data: Dict[str, Any]) -> None:
-    today = date.today().isoformat()
-    habit = data.get(habit_name)
 
-    if not habit:
-        raise ValueError(f"Habit '{habit_name}' does not exist")
+def mark_done(name: str, data: Dict[str, Any], today: Optional[str] = None) -> Dict[str, Any]:
+    if name not in data:
+        raise ValueError(f"Habit '{name}' does not exist.")
 
-    if habit["last_done"] != today:
-        habit["streak"] += 1
-        habit["last_done"] = today
+    today = today or date.today().isoformat()
+    if today not in data[name]["dates"]:
+        data[name]["dates"].append(today)
+        data[name]["dates"].sort()
+    return data
 
-def list_habits(data):
-    return list(data.keys())
+
+def is_done_today(name: str, data: Dict[str, Any], today: Optional[str] = None) -> bool:
+    today = today or date.today().isoformat()
+    return today in data.get(name, {}).get("dates", [])

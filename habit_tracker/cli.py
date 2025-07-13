@@ -1,59 +1,64 @@
-# habit_tracker/cli.py
-
 import argparse
-import json
-import os
-from .core import add_habit, mark_done, list_habits
+from datetime import date
 
-DATA_FILE = os.getenv("HABIT_TRACKER_DATA_PATH", "habits.json")
+from .core import add_habit, mark_done, is_done_today
+from .storage import load_data, save_data
 
-def load_data():
-    if not os.path.exists(DATA_FILE):
-        return {}
-    with open(DATA_FILE, "r") as f:
-        return json.load(f)
 
-def save_data(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+def cli_add(args):
+    data = load_data()
+    data = add_habit(args.name, data)
+    save_data(data)
+    print(f"✅ Added habit: {args.name}")
+
+
+def cli_done(args):
+    data = load_data()
+    try:
+        data = mark_done(args.name, data, today=date.today().isoformat())
+        save_data(data)
+        print(f"📅 Marked '{args.name}' as done for today")
+    except ValueError as e:
+        print(f"⚠️ {e}")
+
+
+def cli_list(args):
+    data = load_data()
+    if not data:
+        print("⚠️ No habits tracked yet.")
+        return
+
+    print("📋 Your habits:")
+    for habit in sorted(data.keys()):
+        done = is_done_today(habit, data)
+        status = "✅" if done else "❌"
+        print(f"  {status} {habit}")
+
 
 def main():
-    parser = argparse.ArgumentParser(description="Habit Tracker CLI")
-    subparsers = parser.add_subparsers(dest="command", required=True)
+    parser = argparse.ArgumentParser(description="🧠 Simple Habit Tracker")
+    subparsers = parser.add_subparsers(dest="command")
 
-    # add <habit>
+    # add
     add_parser = subparsers.add_parser("add", help="Add a new habit")
-    add_parser.add_argument("habit")
+    add_parser.add_argument("name", help="Name of the habit")
+    add_parser.set_defaults(func=cli_add)
 
-    # done <habit>
-    done_parser = subparsers.add_parser("done", help="Mark habit as done")
-    done_parser.add_argument("habit")
+    # done
+    done_parser = subparsers.add_parser("done", help="Mark a habit as done today")
+    done_parser.add_argument("name", help="Name of the habit")
+    done_parser.set_defaults(func=cli_done)
 
     # list
-    subparsers.add_parser("list", help="List all habits")
+    list_parser = subparsers.add_parser("list", help="List all habits and their done status")
+    list_parser.set_defaults(func=cli_list)
 
     args = parser.parse_args()
-    data = load_data()
+    if hasattr(args, "func"):
+        args.func(args)
+    else:
+        parser.print_help()
 
-    try:
-        if args.command == "add":
-            add_habit(args.habit, data)
-            print(f"✅ Added habit: {args.habit}")
-        elif args.command == "done":
-            mark_done(args.habit, data)
-            print(f"📅 Marked '{args.habit}' as done for today")
-        elif args.command == "list":
-            habits = list_habits(data)
-            if habits:
-                print("📋 Your habits:")
-                for h in habits:
-                    print(f"  - {h}")
-            else:
-                print("⚠️ No habits tracked yet.")
-    except Exception as e:
-        print(f"❌ Error: {e}")
-
-    save_data(data)
 
 if __name__ == "__main__":
     main()

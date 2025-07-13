@@ -1,70 +1,62 @@
+from habit_tracker.core import add_habit, mark_done, is_done_today
 from datetime import date
-
-import pytest
-
-from habit_tracker import core
+from copy import deepcopy
 
 
-def test_add_habit_create_new_entry():
+def today_str(offset=0):
+    return (date.today()).isoformat()
+
+
+def test_add_new_habit():
     data = {}
-    core.add_habit("Read", data)
-    assert "Read" in data
+    updated = add_habit("meditate", deepcopy(data))
+    assert "meditate" in updated
+    assert updated["meditate"]["dates"] == []
 
 
-def test_add_habit_raises_if_exists():
-    data = {"read": {"streak": 3, "last_done": "2024-07-10"}}
+def test_add_existing_habit_is_idempotent():
+    data = {"meditate": {"dates": []}}
+    updated = add_habit("meditate", deepcopy(data))
+    assert updated == data  # No change
 
 
-    with pytest.raises(ValueError):
-        core.add_habit("read", data)
+def test_mark_done_adds_today():
+    today = date.today().isoformat()
+    data = {"meditate": {"dates": []}}
+
+    updated = mark_done("meditate", deepcopy(data), today=today)
+
+    assert today in updated["meditate"]["dates"]
 
 
-def test_mark_done_increments_streak_and_sets_today():
-    data = {
-        "read": {
-            "streak": 2,
-            "last_done": "2024-07-10"
-        }
-    }
-    core.mark_done("read", data)
+def test_mark_done_does_not_duplicate_today():
+    today = date.today().isoformat()
+    data = {"meditate": {"dates": [today]}}
 
-    assert data["read"]["streak"] == 3
-    assert data["read"]["last_done"] == date.today().isoformat()
+    updated = mark_done("meditate", deepcopy(data), today=today)
+
+    assert updated["meditate"]["dates"].count(today) == 1
 
 
 def test_mark_done_raises_if_habit_missing():
     data = {}
+    try:
+        mark_done("nonexistent", deepcopy(data))
+    except ValueError as e:
+        assert "does not exist" in str(e)
+    else:
+        assert False, "Expected ValueError"
 
-    with pytest.raises(ValueError):
-        core.mark_done("meditate", data)
 
-
-def test_mark_done_does_not_increase_streak_twice_in_a_day():
+def test_is_done_today_true():
     today = date.today().isoformat()
-    data = {
-        "run": {
-            "streak": 5,
-            "last_done": today
-        }
-    }
+    data = {"meditate": {"dates": [today]}}
 
-    core.mark_done("run", data)
-
-    assert data["run"]["streak"] == 5
-    assert data["run"]["last_done"] == today
+    assert is_done_today("meditate", data, today=today) is True
 
 
-def test_list_habits_returns_all_habit_names():
-    data = {
-        "read": {"streak": 3, "last_done": "2024-07-10"},
-        "run": {"streak": 2, "last_done": "2024-07-11"},
-    }
+def test_is_done_today_false():
+    today = date.today().isoformat()
+    data = {"meditate": {"dates": []}}
 
-    result = core.list_habits(data)
-    assert set(result) == {"read", "run"}
-
-def test_list_habits_empty_returns_empty_list():
-    data = {}
-    result = core.list_habits(data)
-    assert result == []
-
+    assert is_done_today("meditate", data, today=today) is False

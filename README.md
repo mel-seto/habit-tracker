@@ -1,93 +1,136 @@
-# 🧘 Habit Tracker (Command-Line)
+# 🧠 Habit Tracker (CLI)
 
-A minimal command-line tool to track daily habits.  
-Built in Python from scratch using TDD and `argparse`.
+A simple Python command-line app to help you build habits and track your daily progress.  
+Stores your data in a local `habits.json` file.
 
-## ✨ Features
+---
 
-- ✅ Add a habit to track  
-- ✅ Mark a habit as done for today  
-- ✅ List all tracked habits  
-- ✅ Persistent storage via `habits.json`  
-- ✅ Written with unit tests (core + CLI)  
-- ✅ Runs via `python -m habit_tracker`
+## 🚀 Features
 
-## 🚀 Usage
+- ✅ Add habits
+- 📅 Mark habits as done today
+- 📋 List all habits and show whether they’re done for today
 
-**Add a new habit**
+---
 
-    $ python -m habit_tracker add meditate
-    ✅ Added habit: meditate
+## 🛠️ Installation
 
-**Mark it done for today**
+1. **Clone the repo:**
 
-    $ python -m habit_tracker done meditate
-    📅 Marked 'meditate' as done for today
+    ```bash
+    git clone https://github.com/your-username/habit-tracker.git
+    cd habit-tracker
+    ```
 
-**List all habits**
+2. **Create a virtual environment:**
 
-    $ python -m habit_tracker list
-    📋 Your habits:
-      - meditate
+    ```bash
+    python3.12 -m venv .venv
+    source .venv/bin/activate
+    ```
 
-**If no habits are tracked**
+3. **Install dependencies:**
 
-    $ python -m habit_tracker list
-    ⚠️ No habits tracked yet.
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-**If you try to mark an unknown habit**
+---
 
-    $ python -m habit_tracker done unknown
-    ❌ Error: Habit 'unknown' not found.
+## 🧪 Run tests
 
-## 🧪 Installation
+```bash
+pytest
+```
 
-You'll need:
+---
+
+## 🧑‍💻 Usage
+
+Run the CLI using Python's `-m` flag (thanks to `__main__.py`):
+
+```bash
+python -m habit_tracker add meditate
+python -m habit_tracker done meditate
+python -m habit_tracker list
+```
+
+---
+
+## 📝 Example Output
+
+### Add a habit
+
+```bash
+$ python -m habit_tracker add meditate
+✅ Added habit: meditate
+```
+
+### Mark as done
+
+```bash
+$ python -m habit_tracker done meditate
+📅 Marked 'meditate' as done for today
+```
+
+### List habits
+
+```bash
+$ python -m habit_tracker list
+📋 Your habits:
+  ✅ meditate
+  ❌ read
+```
+
+---
+
+## 🧠 How It Works
+
+All habits are saved to a local file named `habits.json`.  
+Each habit stores the dates you marked it done.
+
+Example contents of `habits.json`:
+
+```json
+{
+  "meditate": {
+    "dates": ["2025-07-11"]
+  },
+  "read": {
+    "dates": []
+  }
+}
+```
+
+---
+
+## ✅ Requirements
 
 - Python 3.12+
-- `pip`
-- `pytest`
+- Dependencies listed in `requirements.txt`
 
-Set up your environment:
+---
 
-    git clone https://github.com/yourusername/habit-tracker.git
-    cd habit-tracker
-    python3 -m venv .venv
-    source .venv/bin/activate
-    pip install -r requirements.txt
+## 📂 Project Structure
 
-## 🧪 Running Tests
+```
+habit-tracker/
+├── habit_tracker/
+│   ├── __init__.py
+│   ├── __main__.py      # ← lets you use python -m habit_tracker
+│   ├── cli.py           # command-line interface
+│   ├── core.py          # core logic (pure functions)
+│   ├── storage.py       # file I/O (load/save JSON)
+├── tests/
+│   ├── test_core.py
+│   ├── test_cli.py
+├── requirements.txt
+├── README.md
+├── habits.json          # auto-created on first use
+```
 
-Run all tests with:
+---
 
-    pytest
+## 🎓 License
 
-Includes tests for:
-
-- Core logic (`add_habit`, `mark_done`, `list_habits`)
-- CLI behavior (via subprocess and isolated test files)
-
-## 📁 Project Structure
-
-    habit-tracker/
-    ├── habit_tracker/
-    │   ├── __init__.py
-    │   ├── core.py         # Core habit logic
-    │   ├── cli.py          # CLI interface using argparse
-    │   └── __main__.py     # Enables `python -m habit_tracker`
-    ├── tests/
-    │   ├── __init__.py
-    │   ├── test_core.py
-    │   └── test_cli.py
-    ├── habits.json         # (generated at runtime)
-    ├── requirements.txt
-    └── README.md
-
-## 💡 Why This Project?
-
-This project was written from scratch as part of my Recurse Center application.  
-It reflects how I approach code design, testing, and command-line UX.
-
-## ✅ License
-
-MIT — do what you want.
+MIT

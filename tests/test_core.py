@@ -1,4 +1,4 @@
-from habit_tracker.core import add_habit, log_activity, is_done_today
+from habit_tracker.core import add_habit, log_activity, is_done_today, get_logs_by_habit
 from datetime import datetime, date
 from copy import deepcopy
 
@@ -46,3 +46,37 @@ def test_is_done_today_false():
     data = {"meditate": {"logs": []}}
 
     assert is_done_today("meditate", data, today) is False
+
+def test_get_logs_by_habit():
+    # Sample data mimicking your storage format
+    data = {
+        "meditate": {
+            "logs": [
+                {"timestamp": "2025-07-18T10:00:00", "focus_rating": 3, "notes": "Morning session"},
+                {"timestamp": "2025-07-19T09:30:00", "focus_rating": 4, "notes": "Felt calm"}
+            ]
+        },
+        "study Chinese": {
+            "logs": [
+                {"timestamp": "2025-07-17T15:00:00", "focus_rating": 5, "notes": "Reviewed characters"},
+            ]
+        },
+        "empty habit": {
+            "logs": []
+        }
+    }
+
+    result = get_logs_by_habit(data)
+
+    # Check keys match
+    assert set(result.keys()) == {"meditate", "study Chinese", "empty habit"}
+
+    # Logs are sorted descending by timestamp
+    assert result["meditate"][0]["timestamp"] == "2025-07-19T09:30:00"
+    assert result["meditate"][1]["timestamp"] == "2025-07-18T10:00:00"
+
+    # Empty logs remain empty
+    assert result["empty habit"] == []
+
+    # Check content of one entry
+    assert result["study Chinese"][0]["focus_rating"] == 5

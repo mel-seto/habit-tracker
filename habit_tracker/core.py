@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 
 def add_habit(name: str, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -25,3 +25,12 @@ def is_done_today(name: str, data: Dict[str, Any], current_time: Optional[str] =
     current_time = current_time or date.today().isoformat()
     logs = data.get(name, {}).get("logs", [])
     return any(log["timestamp"].startswith(current_time) for log in logs)
+
+
+def get_logs_by_habit(data: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
+    result = {}
+    for habit, info in data.items():
+        logs = info.get("logs", [])
+        sorted_logs = sorted(logs, key=lambda x: x["timestamp"], reverse=True)
+        result[habit] = sorted_logs
+    return result

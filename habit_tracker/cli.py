@@ -1,7 +1,7 @@
 import argparse
 from datetime import date
 
-from .core import add_habit, mark_done, is_done_today
+from .core import add_habit, log_activity, is_done_today
 from .storage import load_data, save_data
 
 
@@ -15,7 +15,7 @@ def cli_add(args):
 def cli_done(args):
     data = load_data()
     try:
-        data = mark_done(args.name, data, today=date.today().isoformat())
+        data = log_activity(args.name, data, current_time=date.today().isoformat())
         save_data(data)
         print(f"📅 Marked '{args.name}' as done for today")
     except ValueError as e:

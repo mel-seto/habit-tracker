@@ -1,62 +1,48 @@
-from habit_tracker.core import add_habit, mark_done, is_done_today
-from datetime import date
+from habit_tracker.core import add_habit, log_activity, is_done_today
+from datetime import datetime, date
 from copy import deepcopy
-
-
-def today_str(offset=0):
-    return (date.today()).isoformat()
-
 
 def test_add_new_habit():
     data = {}
     updated = add_habit("meditate", deepcopy(data))
     assert "meditate" in updated
-    assert updated["meditate"]["dates"] == []
-
+    assert updated["meditate"]["logs"] == []
 
 def test_add_existing_habit_is_idempotent():
-    data = {"meditate": {"dates": []}}
+    data = {"meditate": {"logs": []}}
     updated = add_habit("meditate", deepcopy(data))
     assert updated == data  # No change
 
+def test_log_activity_adds_entry():
+    now = datetime.now().isoformat()
+    data = {"meditate": {"logs": []}}
 
-def test_mark_done_adds_today():
-    today = date.today().isoformat()
-    data = {"meditate": {"dates": []}}
+    updated = log_activity("meditate", deepcopy(data), focus=3, notes="Decent session", current_time=now)
 
-    updated = mark_done("meditate", deepcopy(data), today=today)
+    assert len(updated["meditate"]["logs"]) == 1
+    entry = updated["meditate"]["logs"][0]
+    assert entry["timestamp"] == now
+    assert entry["focus_rating"] == 3
+    assert entry["notes"] == "Decent session"
 
-    assert today in updated["meditate"]["dates"]
-
-
-def test_mark_done_does_not_duplicate_today():
-    today = date.today().isoformat()
-    data = {"meditate": {"dates": [today]}}
-
-    updated = mark_done("meditate", deepcopy(data), today=today)
-
-    assert updated["meditate"]["dates"].count(today) == 1
-
-
-def test_mark_done_raises_if_habit_missing():
+def test_log_activity_raises_if_habit_missing():
     data = {}
     try:
-        mark_done("nonexistent", deepcopy(data))
+        log_activity("nonexistent", deepcopy(data), focus=2)
     except ValueError as e:
         assert "does not exist" in str(e)
     else:
         assert False, "Expected ValueError"
 
-
 def test_is_done_today_true():
     today = date.today().isoformat()
-    data = {"meditate": {"dates": [today]}}
+    log_time = f"{today}T08:00:00"
+    data = {"meditate": {"logs": [{"timestamp": log_time, "focus_rating": 4, "notes": ""}]}}
 
-    assert is_done_today("meditate", data, today=today) is True
-
+    assert is_done_today("meditate", data, today) is True
 
 def test_is_done_today_false():
     today = date.today().isoformat()
-    data = {"meditate": {"dates": []}}
+    data = {"meditate": {"logs": []}}
 
-    assert is_done_today("meditate", data, today=today) is False
+    assert is_done_today("meditate", data, today) is False

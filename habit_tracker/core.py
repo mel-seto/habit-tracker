@@ -27,10 +27,12 @@ def is_done_today(name: str, data: Dict[str, Any], current_time: Optional[str] =
     return any(log["timestamp"].startswith(current_time) for log in logs)
 
 
-def get_logs_by_habit(data: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
-    result = {}
+def get_logs_by_habit(data: Dict[str, Any], limit: Optional[int] = None) -> Dict[str, List[Dict[str, Any]]]:
+    logs_by_habit = {}
+
     for habit, info in data.items():
         logs = info.get("logs", [])
         sorted_logs = sorted(logs, key=lambda x: x["timestamp"], reverse=True)
-        result[habit] = sorted_logs
-    return result
+        logs_by_habit[habit] = sorted_logs[:limit] if limit is not None else sorted_logs
+
+    return logs_by_habit

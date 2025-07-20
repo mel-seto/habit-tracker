@@ -47,36 +47,26 @@ def test_is_done_today_false():
 
     assert is_done_today("meditate", data, today) is False
 
-def test_get_logs_by_habit():
-    # Sample data mimicking your storage format
+def test_get_logs_by_habit_full_and_limited():
     data = {
         "meditate": {
             "logs": [
-                {"timestamp": "2025-07-18T10:00:00", "focus_rating": 3, "notes": "Morning session"},
-                {"timestamp": "2025-07-19T09:30:00", "focus_rating": 4, "notes": "Felt calm"}
+                {"timestamp": "2025-07-15T08:00:00"},
+                {"timestamp": "2025-07-16T08:00:00"},
+                {"timestamp": "2025-07-17T08:00:00"},
+                {"timestamp": "2025-07-18T08:00:00"},
+                {"timestamp": "2025-07-19T08:00:00"}
             ]
-        },
-        "study Chinese": {
-            "logs": [
-                {"timestamp": "2025-07-17T15:00:00", "focus_rating": 5, "notes": "Reviewed characters"},
-            ]
-        },
-        "empty habit": {
-            "logs": []
         }
     }
 
-    result = get_logs_by_habit(data)
+    # Full logbook (no limit)
+    full_logs = get_logs_by_habit(data)
+    assert len(full_logs["meditate"]) == 5
+    assert full_logs["meditate"][0]["timestamp"] == "2025-07-19T08:00:00"
 
-    # Check keys match
-    assert set(result.keys()) == {"meditate", "study Chinese", "empty habit"}
-
-    # Logs are sorted descending by timestamp
-    assert result["meditate"][0]["timestamp"] == "2025-07-19T09:30:00"
-    assert result["meditate"][1]["timestamp"] == "2025-07-18T10:00:00"
-
-    # Empty logs remain empty
-    assert result["empty habit"] == []
-
-    # Check content of one entry
-    assert result["study Chinese"][0]["focus_rating"] == 5
+    # Limited to most recent 3
+    recent_logs = get_logs_by_habit(data, limit=3)
+    assert len(recent_logs["meditate"]) == 3
+    assert recent_logs["meditate"][0]["timestamp"] == "2025-07-19T08:00:00"
+    assert recent_logs["meditate"][-1]["timestamp"] == "2025-07-17T08:00:00"

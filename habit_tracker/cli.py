@@ -41,26 +41,32 @@ def cli_log(args):
     save_data(data)
     print(f"📝 Logged activity for '{args.name}' with focus {focus}")
 
-
-def cli_logbook(args):
-    data = load_data()
-    all_logs = get_logs_by_habit(data)
-
-    if not any(all_logs.values()):
-        print("⚠️ No habits logged yet.")
+def print_logs_by_habit(logs_by_habit):
+    if not any(logs_by_habit.values()):
+        print("⚠️ No logs found.")
         return
 
-    for habit, logs in all_logs.items():
+    for habit, logs in logs_by_habit.items():
         if not logs:
             continue
-
-        print(f"\n📖 Logbook for '{habit}'")
+        print(f"\n📖 Logs for '{habit}':")
         for entry in logs:
             dt = datetime.fromisoformat(entry["timestamp"]).strftime("%Y-%m-%d %H:%M")
             focus = entry.get("focus_rating", "?")
             notes = entry.get("notes", "")
             print(f"  - {dt} | Focus: {focus} | Notes: {notes}")
 
+
+def cli_logbook(args):
+    data = load_data()
+    logs = get_logs_by_habit(data)  # no limit for full history
+    print_logs_by_habit(logs)
+
+def cli_recent(args):
+    data = load_data()
+    limit = args.limit
+    logs = get_logs_by_habit(data, limit=limit)
+    print_logs_by_habit(logs)
 
 def main():
     parser = argparse.ArgumentParser(description="🧠 Simple Habit Tracker")
@@ -83,6 +89,16 @@ def main():
     # logbook
     logbook_parser = subparsers.add_parser("logbook", help="Show all logs grouped by habit")
     logbook_parser.set_defaults(func=cli_logbook)
+
+    # recent
+    recent_parser = subparsers.add_parser("recent", help="Show recent logs per habit")
+    recent_parser.add_argument(
+        "--limit",
+        type=int,
+        default=3,
+        help="Number of recent logs to show per habit (default: 3)"
+    )
+    recent_parser.set_defaults(func=cli_recent)
 
     args = parser.parse_args()
     if hasattr(args, "func"):

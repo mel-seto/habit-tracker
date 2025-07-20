@@ -114,7 +114,7 @@ python -m habit_tracker logbook
 Run the dummy data script directly from the command line:
 
 ~~~bash
-python habit_tracker/utils/dummy_data.py
+python -m habit_tracker.utils.dummy_data
 ~~~
 
 This will save predefined dummy habits and logs into your storage file (`habits.json` by default).

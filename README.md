@@ -109,22 +109,15 @@ python -m habit_tracker logbook
 ~~~
 
 ---
-## Generate Dummy Data
+## Generating Dummy Data
 
-For testing or demo purposes, you can generate dummy habit logs using the `generate_dummy_data` module located in `habit_tracker/utils/`.
+Run the dummy data script directly from the command line:
 
-You can use this in an interactive Python session:
-
-~~~python
-from habit_tracker.utils.generate_dummy_data import generate_dummy_data
-from habit_tracker.storage import save_data
-
-data = generate_dummy_data()
-save_data(data)
-print("Dummy data generated and saved.")
+~~~bash
+python habit_tracker/utils/dummy_data.py
 ~~~
 
-After running this, your `habits.json` file will contain sample habits with timestamps for quick testing.
+This will save predefined dummy habits and logs into your storage file (`habits.json` by default).
 
 ---
 

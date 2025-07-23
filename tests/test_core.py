@@ -17,7 +17,7 @@ def test_log_activity_adds_entry():
     now = datetime.now().isoformat()
     data = {"meditate": {"logs": []}}
 
-    updated = log_activity("meditate", deepcopy(data), focus=3, notes="Decent session", current_time=now)
+    updated = log_activity("meditate", deepcopy(data), focus_rating=3, notes="Decent session", current_time=now)
 
     assert len(updated["meditate"]["logs"]) == 1
     entry = updated["meditate"]["logs"][0]
@@ -28,7 +28,7 @@ def test_log_activity_adds_entry():
 def test_log_activity_raises_if_habit_missing():
     data = {}
     try:
-        log_activity("nonexistent", deepcopy(data), focus=2)
+        log_activity("nonexistent", deepcopy(data), focus_rating=2)
     except ValueError as e:
         assert "does not exist" in str(e)
     else:
@@ -70,3 +70,12 @@ def test_get_logs_by_habit_full_and_limited():
     assert len(recent_logs["meditate"]) == 3
     assert recent_logs["meditate"][0]["timestamp"] == "2025-07-19T08:00:00"
     assert recent_logs["meditate"][-1]["timestamp"] == "2025-07-17T08:00:00"
+
+
+def test_log_activity_does_not_duplicate():
+    now = datetime.now().isoformat()
+    data = {"meditate": {"logs": [{"timestamp": now}]}}
+
+    updated = log_activity("meditate", deepcopy(data), current_time=now)
+
+    assert len(updated["meditate"]["logs"]) == 1  # Still just one log

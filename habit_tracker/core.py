@@ -8,16 +8,29 @@ def add_habit(name: str, data: Dict[str, Any]) -> Dict[str, Any]:
     return data
 
 
-def log_activity(name: str, data: Dict[str, Any], current_time: Optional[str] = None, focus: Optional[int] = None, notes: Optional[str] = "") -> Dict[str, Any]:
+
+def log_activity(name: str, data: Dict[str, Any], focus_rating: Optional[int] = None,
+                 notes: str = "", current_time: Optional[str] = None) -> Dict[str, Any]:
     if name not in data:
         raise ValueError(f"Habit '{name}' does not exist.")
 
-    entry = {
-        "timestamp": current_time or datetime.now().isoformat(),
-        "focus_rating": focus,
+    current_time = current_time or datetime.now().isoformat()
+
+    logs = data[name].setdefault("logs", [])
+
+    # Prevent duplicate timestamp
+    if any(entry["timestamp"] == current_time for entry in logs):
+        return data
+
+    logs.append({
+        "timestamp": current_time,
+        "focus_rating": focus_rating,
         "notes": notes
-    }
-    data[name]["logs"].append(entry)
+    })
+
+    # Sort logs by timestamp descending
+    logs.sort(key=lambda x: x["timestamp"], reverse=True)
+
     return data
 
 

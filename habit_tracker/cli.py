@@ -11,6 +11,18 @@ def cli_add(args):
     save_data(data)
     print(f"✅ Added habit: {args.name}")
 
+
+def cli_done(args):
+    data = load_data()
+    now = datetime.now().isoformat()
+    try:
+        data = log_activity(args.name, data, current_time=now)
+        save_data(data)
+        print(f"📅 Marked '{args.name}' as done at {now}")
+    except ValueError as e:
+        print(f"⚠️ {e}")
+
+
 def cli_list(args):
     data = load_data()
     if not data:
@@ -76,6 +88,11 @@ def main():
     add_parser = subparsers.add_parser("add", help="Add a new habit")
     add_parser.add_argument("name", help="Name of the habit")
     add_parser.set_defaults(func=cli_add)
+
+    # done
+    done_parser = subparsers.add_parser("done", help="Quick mark a habit as done for now")
+    done_parser.add_argument("name", help="Name of the habit")
+    done_parser.set_defaults(func=cli_done)
 
     # list
     list_parser = subparsers.add_parser("list", help="List all habits and their done status")
